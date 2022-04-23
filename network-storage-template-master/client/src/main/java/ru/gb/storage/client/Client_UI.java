@@ -24,7 +24,6 @@ import ru.gb.storage.common.message.TextMessage;
 public class Client_UI extends Application {
 
 
-
     public static void main(String[] args) {
         Application.launch(args);
     }
@@ -44,7 +43,8 @@ public class Client_UI extends Application {
         Parent root = loader.load();
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        stage.show();
+
+
 
 
         stage.setTitle("NetworkStorage");

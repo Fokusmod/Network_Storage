@@ -3,11 +3,20 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
 <AnchorPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.gb.storage.client.Controller.MainSceneController">
    <children>
-      <VBox fx:id="AuthBox" layoutX="281.0" layoutY="248.0" prefHeight="100.0" prefWidth="200.0">
+      <VBox fx:id="authBox" layoutX="281.0" layoutY="223.0" prefHeight="130.0" prefWidth="200.0">
          <children>
+            <Label fx:id="authLabel" alignment="CENTER" contentDisplay="CENTER" prefHeight="17.0" prefWidth="201.0" text="Incorrect login or password" visible="false">
+               <VBox.margin>
+                  <Insets top="5.0" />
+               </VBox.margin>
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </Label>
             <TextField fx:id="loginField" promptText="login">
                <VBox.margin>
                   <Insets bottom="10.0" top="10.0" />

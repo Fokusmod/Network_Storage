@@ -15,10 +15,11 @@ import java.util.Arrays;
 public class FirstServerHandler extends SimpleChannelInboundHandler<Message> {
 
     private RandomAccessFile randomAccessFile = null;
-    private Settings database = new Settings();
+//    private Settings database = new Settings();
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) {
+    public void channelActive(ChannelHandlerContext ctx) throws SQLException, ClassNotFoundException {
+        Settings.connect();
         System.out.println("New active channel");
     }
 
@@ -29,12 +30,16 @@ public class FirstServerHandler extends SimpleChannelInboundHandler<Message> {
             AuthMessage message = (AuthMessage) msg;
             System.out.println("incoming auth message: " + message.getPassword() + " " + message.getPassword());
             try {
-                database.connect();
-                if (database.login(message.getLogin(),message.getPassword())) {
+                if (!Settings.isConnected()) {
+                    Settings.connect();
+                }
+
+                if (Settings.login(message.getLogin(), message.getPassword())) {
                     System.out.println("Успешная авторизация.");
                     TextMessage textMessage = new TextMessage();
                     textMessage.setText("success");
                     ctx.writeAndFlush(textMessage);
+                    Settings.disconnect();
                 } else {
                     System.out.println("Авторизация не прошла");
                     TextMessage textMessage = new TextMessage();

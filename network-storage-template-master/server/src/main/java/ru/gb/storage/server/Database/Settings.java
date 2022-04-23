@@ -13,20 +13,20 @@ public class Settings {
     private static Statement statement;
     private static PreparedStatement preparedStatement;
 
-//    public static void main(String[] args) {
-//
-//        try {
-//            connect();
-////            dropTable();
-//            createTable();
-//            addClient();
-//        } catch (SQLException | ClassNotFoundException throwables) {
-//            throwables.printStackTrace();
-//        }
-//
-//    }
+    public static void main(String[] args) {
 
-    public void connect() throws SQLException, ClassNotFoundException {
+        try {
+            connect();
+//            dropTable();
+            createTable();
+            addClient();
+        } catch (SQLException | ClassNotFoundException throwables) {
+            throwables.printStackTrace();
+        }
+
+    }
+
+    public static void connect() throws SQLException, ClassNotFoundException {
         System.out.println("Подключение к базе данных.");
         Class.forName(DRIVER);
         connection = DriverManager.getConnection(CONNECTION);
@@ -36,6 +36,7 @@ public class Settings {
     }
 
     public static void disconnect() {
+        System.out.println("Отключение от базы");
         try {
             if (statement != null) statement.close();
         } catch (SQLException e) {
@@ -52,6 +53,9 @@ public class Settings {
         statement.execute(CREATE_TABLE);
 
     }
+    public static boolean isConnected() throws SQLException {
+        return !connection.isClosed();
+    }
 
 
     private static void dropTable() throws SQLException {
@@ -62,7 +66,7 @@ public class Settings {
         statement.executeUpdate(ADD_CLIENT);
     }
 
-    public boolean login(String login, String pass) {
+    public static boolean login(String login, String pass) {
         try {
 
             preparedStatement = connection.prepareStatement("select * from Account Where login = ? and password = ?");

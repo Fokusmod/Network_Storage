@@ -1,5 +1,6 @@
 package ru.gb.storage.client;
 
+import com.sun.scenario.Settings;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -7,8 +8,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import ru.gb.storage.client.Controller.MainSceneController;
 import ru.gb.storage.common.handler.JsonDecoder;
 import ru.gb.storage.common.handler.JsonEncoder;
@@ -17,6 +16,7 @@ import ru.gb.storage.common.message.TextMessage;
 
 public class Network {
     private SocketChannel channel; // для отправки сообщений с клиента на сервер
+    private static MainSceneController controller;
 
 
     public void start() {
@@ -46,6 +46,7 @@ public class Network {
 
                                             @Override
                                             protected void channelRead0(ChannelHandlerContext ctx, Message msg) {
+
 
                                                 sendRequestAuth(msg);
 
@@ -88,17 +89,20 @@ public class Network {
         channel.writeAndFlush(message);
     }
 
-    public void sendRequestAuth(Message msg) {
+    public void get(MainSceneController mainSceneController) {
+        controller = mainSceneController; // получена ссылка на контроллер
+    }
 
-
+    private void sendRequestAuth(Message msg) {
         if (msg instanceof TextMessage) {
             TextMessage tm = (TextMessage) msg;
             if (tm.getText().equals("success")) {
+                System.out.println(tm.getText());
+                controller.closeAuth();
 
-            MainSceneController.message = tm.getText();
 
             } else {
-
+                controller.errorAuth();
 
             }
         }
