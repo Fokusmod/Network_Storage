@@ -52,16 +52,16 @@ public class Client {
                                         @Override
                                         public void channelActive(ChannelHandlerContext ctx) throws Exception {
                                             final FileRequestMessage frm = new FileRequestMessage();
-                                            frm.setPath("C:/Users/Fokusmod/Desktop/Screenshots.zip");
+                                            frm.setPath("C:/Users/Fokusmod/Desktop/Win8.1_English_x64.iso");
                                             ctx.writeAndFlush(frm);
                                         }
 
                                         @Override
                                         protected void channelRead0(ChannelHandlerContext ctx, Message msg) {
                                             if (msg instanceof FileContentMessage) {
-                                                System.out.println("FileContentMessage");
+                                                System.out.println("FileContentMessage " + ((FileContentMessage) msg).getStartPosition());
                                                 FileContentMessage fcm =  (FileContentMessage) msg;
-                                                try (RandomAccessFile randomAccessFile = new RandomAccessFile("C:/Users/Fokusmod/Desktop/TextScreenshots.zip", "rw")) {
+                                                try (RandomAccessFile randomAccessFile = new RandomAccessFile("C:/Users/Fokusmod/Desktop/Test_Win8.1_English_x64.iso", "rw")) {
                                                     randomAccessFile.seek(fcm.getStartPosition());
                                                     randomAccessFile.write(fcm.getContent());
                                                     if (fcm.isLastPosition()) {

@@ -22,7 +22,7 @@ import java.util.Arrays;
 public class Server {
 
     private final int port;
-    StringBuilder message = new StringBuilder();  // стрингбилдер для склеивания нашего сообшения для отправки клиенту
+
 
     public static void main(String[] args) throws InterruptedException {
         new Server(9000).start();
@@ -49,8 +49,6 @@ public class Server {
                                     new JsonDecoder(),
                                     new JsonEncoder(),
                                     new FirstServerHandler());
-                            //in -> LineBasedFrameDecoder -> JsonDecoder -> FirstServerHandler
-                            //JsonEncoder -> LengthFieldPrepender -> out
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
