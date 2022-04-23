@@ -5,77 +5,85 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import ru.gb.storage.common.message.*;
+import ru.gb.storage.server.Database.Settings;
 
 import java.awt.*;
 import java.io.*;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 public class FirstServerHandler extends SimpleChannelInboundHandler<Message> {
 
     private RandomAccessFile randomAccessFile = null;
+    private Settings database = new Settings();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         System.out.println("New active channel");
-        TextMessage answer = new TextMessage();
-        answer.setText("Successfully connection");
-        ctx.writeAndFlush(answer);
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws IOException {
-        if (msg instanceof TextMessage) {
-            TextMessage message = (TextMessage) msg;
-            System.out.println("incoming text message: " + message.getText());
-            ctx.writeAndFlush(msg);
-        }
-        if (msg instanceof DateMessage) {
-            DateMessage message = (DateMessage) msg;
-            System.out.println("incoming date message: " + message.getDate());
-            ctx.writeAndFlush(msg);
-        }
+    protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws IOException, ClassNotFoundException {
+
         if (msg instanceof AuthMessage) {
             AuthMessage message = (AuthMessage) msg;
             System.out.println("incoming auth message: " + message.getPassword() + " " + message.getPassword());
-            ctx.writeAndFlush(msg);
-        }
-        if (msg instanceof FileRequestMessage) {
-            FileRequestMessage frm = (FileRequestMessage) msg;
-            final File file = new File(frm.getPath());
-            randomAccessFile = new RandomAccessFile(file, "r");
-            sendFile(ctx);
-        }
-    }
-
-    private void sendFile(ChannelHandlerContext ctx) throws IOException {
-        if (randomAccessFile != null) {
-            final byte[] fileContent;
-            final long available = randomAccessFile.length() - randomAccessFile.getFilePointer();
-            if (available > 100 * 1024) {
-                fileContent = new byte[100 * 1024];
-            } else {
-                fileContent = new byte[(int) available];
-            }
-            final FileContentMessage fileContentMessage = new FileContentMessage();
-            fileContentMessage.setStartPosition(randomAccessFile.getFilePointer());
-            randomAccessFile.read(fileContent);
-            fileContentMessage.setContent(fileContent);
-            final boolean last = randomAccessFile.getFilePointer() == randomAccessFile.length();
-
-            fileContentMessage.setLastPosition(last);
-            ctx.writeAndFlush(fileContentMessage).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    if (!last) {
-                        sendFile(ctx);
-                    }
+            try {
+                database.connect();
+                if (database.login(message.getLogin(),message.getPassword())) {
+                    System.out.println("Успешная авторизация.");
+                    TextMessage textMessage = new TextMessage();
+                    textMessage.setText("success");
+                    ctx.writeAndFlush(textMessage);
+                } else {
+                    System.out.println("Авторизация не прошла");
+                    TextMessage textMessage = new TextMessage();
+                    textMessage.setText("Incorrect login or password");
+                    ctx.writeAndFlush(textMessage);
                 }
-            });
-            if (last) {
-                randomAccessFile.close();
-                randomAccessFile = null;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
+
         }
+//        if (msg instanceof FileRequestMessage) {
+//            FileRequestMessage frm = (FileRequestMessage) msg;
+//            final File file = new File(frm.getPath());
+//            randomAccessFile = new RandomAccessFile(file, "r");
+//            sendFile(ctx);
+//        }
+//    }
+//
+//    private void sendFile(ChannelHandlerContext ctx) throws IOException {
+//        if (randomAccessFile != null) {
+//            final byte[] fileContent;
+//            final long available = randomAccessFile.length() - randomAccessFile.getFilePointer();
+//            if (available > 100 * 1024) {
+//                fileContent = new byte[100 * 1024];
+//            } else {
+//                fileContent = new byte[(int) available];
+//            }
+//            final FileContentMessage fileContentMessage = new FileContentMessage();
+//            fileContentMessage.setStartPosition(randomAccessFile.getFilePointer());
+//            randomAccessFile.read(fileContent);
+//            fileContentMessage.setContent(fileContent);
+//            final boolean last = randomAccessFile.getFilePointer() == randomAccessFile.length();
+//
+//            fileContentMessage.setLastPosition(last);
+//            ctx.writeAndFlush(fileContentMessage).addListener(new ChannelFutureListener() {
+//                @Override
+//                public void operationComplete(ChannelFuture channelFuture) throws Exception {
+//                    if (!last) {
+//                        sendFile(ctx);
+//                    }
+//                }
+//            });
+//            if (last) {
+//                randomAccessFile.close();
+//                randomAccessFile = null;
+//            }
+//        }
 
 
     }
