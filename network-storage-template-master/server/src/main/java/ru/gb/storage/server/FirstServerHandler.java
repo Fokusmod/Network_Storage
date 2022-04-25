@@ -5,12 +5,10 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import ru.gb.storage.common.message.*;
-import ru.gb.storage.server.Database.Settings;
+import ru.gb.storage.server.Database.Database;
 
-import java.awt.*;
 import java.io.*;
 import java.sql.SQLException;
-import java.util.Arrays;
 
 public class FirstServerHandler extends SimpleChannelInboundHandler<Message> {
 
@@ -19,7 +17,7 @@ public class FirstServerHandler extends SimpleChannelInboundHandler<Message> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws SQLException, ClassNotFoundException {
-        Settings.connect();
+        Database.connect();
         System.out.println("New active channel");
     }
 
@@ -30,16 +28,16 @@ public class FirstServerHandler extends SimpleChannelInboundHandler<Message> {
             AuthMessage message = (AuthMessage) msg;
             System.out.println("incoming auth message: " + message.getPassword() + " " + message.getPassword());
             try {
-                if (!Settings.isConnected()) {
-                    Settings.connect();
+                if (!Database.isConnected()) {
+                    Database.connect();
                 }
 
-                if (Settings.login(message.getLogin(), message.getPassword())) {
+                if (Database.login(message.getLogin(), message.getPassword())) {
                     System.out.println("Успешная авторизация.");
                     TextMessage textMessage = new TextMessage();
                     textMessage.setText("success");
                     ctx.writeAndFlush(textMessage);
-                    Settings.disconnect();
+                    Database.disconnect();
                 } else {
                     System.out.println("Авторизация не прошла");
                     TextMessage textMessage = new TextMessage();
@@ -52,43 +50,44 @@ public class FirstServerHandler extends SimpleChannelInboundHandler<Message> {
             }
 
         }
-//        if (msg instanceof FileRequestMessage) {
-//            FileRequestMessage frm = (FileRequestMessage) msg;
-//            final File file = new File(frm.getPath());
-//            randomAccessFile = new RandomAccessFile(file, "r");
-//            sendFile(ctx);
-//        }
-//    }
-//
-//    private void sendFile(ChannelHandlerContext ctx) throws IOException {
-//        if (randomAccessFile != null) {
-//            final byte[] fileContent;
-//            final long available = randomAccessFile.length() - randomAccessFile.getFilePointer();
-//            if (available > 100 * 1024) {
-//                fileContent = new byte[100 * 1024];
-//            } else {
-//                fileContent = new byte[(int) available];
-//            }
-//            final FileContentMessage fileContentMessage = new FileContentMessage();
-//            fileContentMessage.setStartPosition(randomAccessFile.getFilePointer());
-//            randomAccessFile.read(fileContent);
-//            fileContentMessage.setContent(fileContent);
-//            final boolean last = randomAccessFile.getFilePointer() == randomAccessFile.length();
-//
-//            fileContentMessage.setLastPosition(last);
-//            ctx.writeAndFlush(fileContentMessage).addListener(new ChannelFutureListener() {
-//                @Override
-//                public void operationComplete(ChannelFuture channelFuture) throws Exception {
-//                    if (!last) {
-//                        sendFile(ctx);
-//                    }
-//                }
-//            });
-//            if (last) {
-//                randomAccessFile.close();
-//                randomAccessFile = null;
-//            }
-//        }
+        if (msg instanceof FileRequestMessage) {
+            FileRequestMessage frm = (FileRequestMessage) msg;
+            final File file = new File(frm.getPath());
+            System.out.println(file.getPath());
+            randomAccessFile = new RandomAccessFile(file, "r");
+            sendFile(ctx);
+        }
+    }
+
+    private void sendFile(ChannelHandlerContext ctx) throws IOException {
+        if (randomAccessFile != null) {
+            final byte[] fileContent;
+            final long available = randomAccessFile.length() - randomAccessFile.getFilePointer();
+            if (available > 100 * 1024) {
+                fileContent = new byte[100 * 1024];
+            } else {
+                fileContent = new byte[(int) available];
+            }
+            final FileContentMessage fileContentMessage = new FileContentMessage();
+            fileContentMessage.setStartPosition(randomAccessFile.getFilePointer());
+            randomAccessFile.read(fileContent);
+            fileContentMessage.setContent(fileContent);
+            final boolean last = randomAccessFile.getFilePointer() == randomAccessFile.length();
+
+            fileContentMessage.setLastPosition(last);
+            ctx.writeAndFlush(fileContentMessage).addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                    if (!last) {
+                        sendFile(ctx);
+                    }
+                }
+            });
+            if (last) {
+                randomAccessFile.close();
+                randomAccessFile = null;
+            }
+        }
 
 
     }

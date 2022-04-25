@@ -8,16 +8,32 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import ru.gb.storage.client.Controller.MainSceneController;
 import ru.gb.storage.common.handler.JsonDecoder;
 import ru.gb.storage.common.handler.JsonEncoder;
+import ru.gb.storage.common.message.FileContentMessage;
+import ru.gb.storage.common.message.FileRequestMessage;
 import ru.gb.storage.common.message.Message;
 import ru.gb.storage.common.message.TextMessage;
 
-public class Network {
-    private SocketChannel channel; // для отправки сообщений с клиента на сервер
-    private static MainSceneController controller;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+public class Network {
+    private SocketChannel channel;
+    private MainSceneController controller;
+
+
+    private String correctlyPathDownload = "";  // здесь будет путь куда нужно загрузить файл
+    private String pathServer = "C:\\Users\\Fokusmod\\Desktop\\"; // здесь путь для отображения содержимого
+    private String pathView = "C:\\Users\\Fokusmod\\Desktop";
+    private String correctNameFile = "";
 
     public void start() {
         Thread t = new Thread(() -> {
@@ -38,33 +54,25 @@ public class Network {
                                         new JsonEncoder(),
                                         new SimpleChannelInboundHandler<Message>() {
                                             @Override
-                                            public void channelActive(ChannelHandlerContext ctx) throws Exception {
-//                                            final FileRequestMessage frm = new FileRequestMessage();
-//                                            frm.setPath("C:/Users/Fokusmod/Desktop/Win8.1_English_x64.iso");
-//                                            ctx.writeAndFlush(frm);
-                                            }
-
-                                            @Override
                                             protected void channelRead0(ChannelHandlerContext ctx, Message msg) {
+                                                if(msg instanceof TextMessage) {
+                                                    sendRequestAuth(msg);
+                                                }
+                                                if (msg instanceof FileContentMessage) {
+                                                    System.out.println(((FileContentMessage) msg).getStartPosition());
 
-
-                                                sendRequestAuth(msg);
-
-//
-
-//                                            if (msg instanceof FileContentMessage) {
-//                                                System.out.println("FileContentMessage " + ((FileContentMessage) msg).getStartPosition());
-//                                                FileContentMessage fcm = (FileContentMessage) msg;
-//                                                try (RandomAccessFile randomAccessFile = new RandomAccessFile("C:/Users/Fokusmod/Desktop/Test_Win8.1_English_x64.iso", "rw")) {
-//                                                    randomAccessFile.seek(fcm.getStartPosition());
-//                                                    randomAccessFile.write(fcm.getContent());
-//                                                    if (fcm.isLastPosition()) {
-//                                                        ctx.close();
-//                                                    }
-//                                                } catch (IOException e) {
-//                                                    e.printStackTrace();
-//                                                }
-//                                            }
+                                                    FileContentMessage fcm = (FileContentMessage) msg;
+                                                    try (RandomAccessFile randomAccessFile = new RandomAccessFile(correctlyPathDownload, "rw")) {
+                                                        randomAccessFile.seek(fcm.getStartPosition());
+                                                        randomAccessFile.write(fcm.getContent());
+                                                        if (fcm.isLastPosition()) {
+                                                            System.out.println("Файл успешно передан");
+                                                            controller.refreshUsersDirectory();
+                                                        }
+                                                    } catch (IOException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
                                             }
                                         }
                                 );
@@ -84,28 +92,122 @@ public class Network {
         t.start();
 
     }
+    public String getPathServer() {
+        return pathServer;
+    }
 
     public void authorization(Message message) {
         channel.writeAndFlush(message);
     }
 
-    public void get(MainSceneController mainSceneController) {
-        controller = mainSceneController; // получена ссылка на контроллер
+    public MainSceneController getController(MainSceneController mainSceneController) {
+        return controller = mainSceneController;
     }
+
 
     private void sendRequestAuth(Message msg) {
         if (msg instanceof TextMessage) {
             TextMessage tm = (TextMessage) msg;
             if (tm.getText().equals("success")) {
-                System.out.println(tm.getText());
                 controller.closeAuth();
-
-
+                createServerDirectory(pathServer);
+                sendDirectoryOnView(pathView);
+                sendUsersDirectory(pathServer);
             } else {
                 controller.errorAuth();
-
             }
         }
     }
 
+    private void createServerDirectory(String path) {
+        String pathName = path;
+        pathName += "\\";
+        pathName += controller.loginField.getText();
+        pathServer = pathName;
+        File file = new File(pathName);
+        file.mkdirs();
+    }
+
+
+    public void sendDirectoryOnView(String path) {
+        File file = new File(path);
+        File[] files = file.listFiles();
+        ArrayList<String> list = new ArrayList<String>();
+        list.add("//");
+        for (File f : files) {
+            if (f.exists())
+                list.add(f.getName());
+        }
+        controller.serverList.setItems(FXCollections.observableArrayList(list));
+    }
+
+    public void upDirectory(String s) {
+        String old = pathView;
+        String newPath = old;
+        newPath += "\\";
+        newPath += s;
+        File file = new File(newPath);
+        if (!file.isFile()) {
+            pathView = newPath;
+            sendDirectoryOnView(pathView);
+        }
+    }
+
+    public void backDirectory() {
+        String path = pathView;
+        path = path.substring(0, path.lastIndexOf("\\"));
+        pathView = path;
+        sendDirectoryOnView(pathView);
+    }
+
+    public String getPathView() {
+        return pathView;
+    }
+
+    public void sendUsersDirectory(String path) {
+        File file = new File(path);
+        File[] files = file.listFiles();
+        ArrayList<String> list = new ArrayList<>();
+        for (File f : files) {
+            if (f.exists())
+                list.add(f.getName());
+        }
+
+        controller.clientList.setItems(FXCollections.observableArrayList(list));
+    }
+
+    public void sendFileOnClient(String s) {
+        correctNameFile = s;
+        String path = pathView;
+        path += "\\";
+        path += s;
+
+        File file = new File(path);
+        if (file.isFile()) {
+            correctlyPathDownload = pathServer + "\\" + correctNameFile;
+            FileRequestMessage message = new FileRequestMessage();
+            message.setPath(path);
+            channel.writeAndFlush(message);
+        } else {
+            System.out.println("This Directory");
+        }
+
+
+    }
+
+    public void sendFileOnServer(String s) {
+        String path = pathServer + "\\" + s;
+        FileRequestMessage message = new FileRequestMessage();
+        message.setPath(path);
+        correctlyPathDownload = pathView + "\\" + correctNameFile;
+        channel.writeAndFlush(message);
+    }
+
+    public void createFolder(String s) {
+        File file = new File(pathView + "\\" + s);
+        file.mkdir();
+        sendDirectoryOnView(pathView);
+    }
+
 }
+

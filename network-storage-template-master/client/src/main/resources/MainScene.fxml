@@ -5,9 +5,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.gb.storage.client.Controller.MainSceneController">
+<AnchorPane prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.gb.storage.client.Controller.MainSceneController">
    <children>
-      <VBox fx:id="authBox" layoutX="281.0" layoutY="223.0" prefHeight="130.0" prefWidth="200.0">
+      <VBox fx:id="authBox" layoutX="422.0" layoutY="228.0" prefHeight="145.0" prefWidth="208.0">
          <children>
             <Label fx:id="authLabel" alignment="CENTER" contentDisplay="CENTER" prefHeight="17.0" prefWidth="201.0" text="Incorrect login or password" visible="false">
                <VBox.margin>
@@ -20,16 +20,42 @@
             <TextField fx:id="loginField" promptText="login">
                <VBox.margin>
                   <Insets bottom="10.0" top="10.0" />
-               </VBox.margin></TextField>
+               </VBox.margin>
+            </TextField>
             <PasswordField fx:id="passwordField" promptText="password">
                <VBox.margin>
                   <Insets bottom="10.0" />
-               </VBox.margin></PasswordField>
+               </VBox.margin>
+            </PasswordField>
             <Button mnemonicParsing="false" onAction="#sendAuth" text="Log in">
                <VBox.margin>
                   <Insets left="75.0" />
-               </VBox.margin></Button>
+               </VBox.margin>
+            </Button>
          </children>
       </VBox>
+      <Pane fx:id="mainBox" prefHeight="600.0" prefWidth="1052.0" visible="false">
+         <children>
+            <ListView fx:id="serverList" layoutX="17.0" layoutY="66.0" onMouseClicked="#sendDirectory" prefHeight="427.0" prefWidth="509.0" />
+            <ListView fx:id="clientList" layoutX="526.0" layoutY="65.0" prefHeight="427.0" prefWidth="519.0" />
+            <Label fx:id="name" layoutX="531.0" layoutY="30.0" prefHeight="31.0" prefWidth="169.0">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <TextField fx:id="path" layoutX="17.0" layoutY="30.0" prefHeight="31.0" prefWidth="346.0" />
+            <Button fx:id="Download" layoutX="236.0" layoutY="499.0" mnemonicParsing="false" onAction="#download" text="Download" />
+            <Button fx:id="Upload" layoutX="745.0" layoutY="499.0" mnemonicParsing="false" onAction="#upload" text="Upload" />
+            <Button fx:id="newFolder" layoutX="152.0" layoutY="499.0" mnemonicParsing="false" onAction="#newFolder" text="New Folder" />
+            <Button layoutX="370.0" layoutY="33.0" mnemonicParsing="false" onAction="#refresh" text="refresh" />
+         </children>
+      </Pane>
+      <Pane fx:id="newFolderPane" layoutX="403.0" layoutY="261.0" prefHeight="79.0" prefWidth="246.0" style="-fx-border-color: black; -fx-background-color: white;" visible="false">
+         <children>
+            <TextField fx:id="newFolderField" layoutX="14.0" layoutY="40.0" />
+            <Button layoutX="183.0" layoutY="40.0" mnemonicParsing="false" onAction="#SendOkNewFolder" prefHeight="25.0" prefWidth="49.0" text="OK" />
+            <Label layoutX="49.0" layoutY="14.0" prefHeight="17.0" prefWidth="99.0" text="New Folder" />
+         </children>
+      </Pane>
    </children>
 </AnchorPane>
