@@ -2,7 +2,7 @@ package ru.gb.storage.server.Database;
 
 import java.sql.*;
 
-public class Settings {
+public class Database {
     private final static String DRIVER = "org.sqlite.JDBC";
     private final static String CONNECTION = "jdbc:sqlite:network-storage-template-master/server/Auth.db";
     private final static String CREATE_TABLE = "create table if not exists Account (id integer primary key autoincrement,login text UNIQUE not null, password text not null);";
