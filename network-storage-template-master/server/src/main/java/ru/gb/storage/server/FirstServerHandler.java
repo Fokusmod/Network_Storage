@@ -13,7 +13,6 @@ import java.sql.SQLException;
 public class FirstServerHandler extends SimpleChannelInboundHandler<Message> {
 
     private RandomAccessFile randomAccessFile = null;
-//    private Settings database = new Settings();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws SQLException, ClassNotFoundException {
@@ -26,20 +25,17 @@ public class FirstServerHandler extends SimpleChannelInboundHandler<Message> {
 
         if (msg instanceof AuthMessage) {
             AuthMessage message = (AuthMessage) msg;
-            System.out.println("incoming auth message: " + message.getPassword() + " " + message.getPassword());
             try {
                 if (!Database.isConnected()) {
                     Database.connect();
                 }
 
                 if (Database.login(message.getLogin(), message.getPassword())) {
-                    System.out.println("Успешная авторизация.");
                     TextMessage textMessage = new TextMessage();
                     textMessage.setText("success");
                     ctx.writeAndFlush(textMessage);
                     Database.disconnect();
                 } else {
-                    System.out.println("Авторизация не прошла");
                     TextMessage textMessage = new TextMessage();
                     textMessage.setText("Incorrect login or password");
                     ctx.writeAndFlush(textMessage);
@@ -53,7 +49,6 @@ public class FirstServerHandler extends SimpleChannelInboundHandler<Message> {
         if (msg instanceof FileRequestMessage) {
             FileRequestMessage frm = (FileRequestMessage) msg;
             final File file = new File(frm.getPath());
-            System.out.println(file.getPath());
             randomAccessFile = new RandomAccessFile(file, "r");
             sendFile(ctx);
         }

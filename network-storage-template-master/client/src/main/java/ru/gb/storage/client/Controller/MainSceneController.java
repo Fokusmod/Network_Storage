@@ -11,6 +11,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import ru.gb.storage.client.ChannelHandler;
 import ru.gb.storage.client.Network;
 import ru.gb.storage.common.message.AuthMessage;
 
@@ -37,9 +38,10 @@ public class MainSceneController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        network = new Network();
-        network.getController(this); // Передача ссылки для нетворка
+        network = new Network(this);
         network.start();
+
+
     }
 
 
