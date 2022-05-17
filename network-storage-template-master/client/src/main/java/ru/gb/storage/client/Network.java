@@ -27,12 +27,15 @@ import java.util.List;
 
 public class Network {
     private SocketChannel channel;
-    private MainSceneController controller;
+    protected MainSceneController controller;
 
+    public Network(MainSceneController controller) {
+        this.controller = controller;
+    }
 
-    private String correctlyPathDownload = "";  // здесь будет путь куда нужно загрузить файл
-    private String pathServer = "C:\\Users\\Fokusmod\\Desktop\\"; // здесь путь для отображения содержимого
-    private String pathView = "C:\\Users\\Fokusmod\\Desktop";
+    private String pathView = "C:\\Users\\";
+    private String pathServer = "C:";
+    protected String correctlyPathDownload = "";
     private String correctNameFile = "";
 
     public void start() {
@@ -52,33 +55,11 @@ public class Network {
                                         new LengthFieldPrepender(3),
                                         new JsonDecoder(),
                                         new JsonEncoder(),
-                                        new SimpleChannelInboundHandler<Message>() {
-                                            @Override
-                                            protected void channelRead0(ChannelHandlerContext ctx, Message msg) {
-                                                if(msg instanceof TextMessage) {
-                                                    sendRequestAuth(msg);
-                                                }
-                                                if (msg instanceof FileContentMessage) {
-                                                    System.out.println(((FileContentMessage) msg).getStartPosition());
-
-                                                    FileContentMessage fcm = (FileContentMessage) msg;
-                                                    try (RandomAccessFile randomAccessFile = new RandomAccessFile(correctlyPathDownload, "rw")) {
-                                                        randomAccessFile.seek(fcm.getStartPosition());
-                                                        randomAccessFile.write(fcm.getContent());
-                                                        if (fcm.isLastPosition()) {
-                                                            System.out.println("Файл успешно передан");
-                                                            controller.refreshUsersDirectory();
-                                                        }
-                                                    } catch (IOException e) {
-                                                        e.printStackTrace();
-                                                    }
-                                                }
-                                            }
-                                        }
+                                        new ChannelHandler()
                                 );
                             }
                         });
-
+                ChannelHandler.setNetwork(this);
                 System.out.println("Client started");
                 Channel channel = bootstrap.connect("localhost", 9000).sync().channel();
                 channel.closeFuture().sync();
@@ -92,6 +73,7 @@ public class Network {
         t.start();
 
     }
+
     public String getPathServer() {
         return pathServer;
     }
@@ -100,12 +82,8 @@ public class Network {
         channel.writeAndFlush(message);
     }
 
-    public MainSceneController getController(MainSceneController mainSceneController) {
-        return controller = mainSceneController;
-    }
 
-
-    private void sendRequestAuth(Message msg) {
+    protected void sendRequestAuth(Message msg) {
         if (msg instanceof TextMessage) {
             TextMessage tm = (TextMessage) msg;
             if (tm.getText().equals("success")) {
@@ -125,6 +103,7 @@ public class Network {
         pathName += controller.loginField.getText();
         pathServer = pathName;
         File file = new File(pathName);
+        System.out.println(pathServer);
         file.mkdirs();
     }
 
@@ -208,6 +187,7 @@ public class Network {
         file.mkdir();
         sendDirectoryOnView(pathView);
     }
+
 
 }
 

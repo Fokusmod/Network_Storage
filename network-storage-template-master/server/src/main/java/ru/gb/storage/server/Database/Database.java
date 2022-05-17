@@ -4,7 +4,7 @@ import java.sql.*;
 
 public class Database {
     private final static String DRIVER = "org.sqlite.JDBC";
-    private final static String CONNECTION = "jdbc:sqlite:network-storage-template-master/server/Auth.db";
+    private final static String CONNECTION = "jdbc:sqlite:./Auth.db";
     private final static String CREATE_TABLE = "create table if not exists Account (id integer primary key autoincrement,login text UNIQUE not null, password text not null);";
     private final static String DROP_TABLE = "drop table if exists Account;";
     private final static String ADD_CLIENT = "insert into Account  (login, password) values ('admin', 'admin')";
@@ -18,19 +18,22 @@ public class Database {
         try {
             connect();
 //            dropTable();
-            createTable();
-            addClient();
+//            createTable();
+//            addClient();
         } catch (SQLException | ClassNotFoundException throwables) {
             throwables.printStackTrace();
         }
 
     }
 
-    public static void connect() throws SQLException, ClassNotFoundException {
+    public static void connect() throws ClassNotFoundException, SQLException {
         System.out.println("Подключение к базе данных.");
         Class.forName(DRIVER);
+
         connection = DriverManager.getConnection(CONNECTION);
         statement = connection.createStatement();
+        createTable();
+        addClient();
 
 
     }
@@ -49,10 +52,15 @@ public class Database {
         }
     }
 
-    private static void createTable() throws SQLException {
-        statement.execute(CREATE_TABLE);
+    private static void createTable() {
+        try {
+            statement.execute(CREATE_TABLE);
+        } catch (SQLException e) {
+            return;
+        }
 
     }
+
     public static boolean isConnected() throws SQLException {
         return !connection.isClosed();
     }
@@ -62,8 +70,12 @@ public class Database {
         statement.execute(DROP_TABLE);
     }
 
-    private static void addClient() throws SQLException {
-        statement.executeUpdate(ADD_CLIENT);
+    private static void addClient() {
+        try {
+            statement.executeUpdate(ADD_CLIENT);
+        } catch (SQLException e) {
+            return;
+        }
     }
 
     public static boolean login(String login, String pass) {
