@@ -27,7 +27,6 @@ public class ChannelHandler extends SimpleChannelInboundHandler<Message> {
                 randomAccessFile.seek(fcm.getStartPosition());
                 randomAccessFile.write(fcm.getContent());
                 if (fcm.isLastPosition()) {
-                    System.out.println("Файл успешно передан");
                     network.controller.refreshUsersDirectory();
                 }
             } catch (IOException e) {

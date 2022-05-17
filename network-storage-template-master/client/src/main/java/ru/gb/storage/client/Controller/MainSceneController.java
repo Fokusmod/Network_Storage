@@ -2,20 +2,13 @@ package ru.gb.storage.client.Controller;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import ru.gb.storage.client.ChannelHandler;
 import ru.gb.storage.client.Network;
 import ru.gb.storage.common.message.AuthMessage;
-
-import java.awt.event.ActionListener;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -40,8 +33,6 @@ public class MainSceneController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         network = new Network(this);
         network.start();
-
-
     }
 
 
@@ -83,8 +74,8 @@ public class MainSceneController implements Initializable {
                 network.backDirectory();
                 path.setText(network.getPathView());
             } else {
-                String newDirrectory = serverList.getSelectionModel().getSelectedItem();
-                network.upDirectory(newDirrectory);
+                String newDirectory = serverList.getSelectionModel().getSelectedItem();
+                network.upDirectory(newDirectory);
                 path.setText(network.getPathView());
             }
         }

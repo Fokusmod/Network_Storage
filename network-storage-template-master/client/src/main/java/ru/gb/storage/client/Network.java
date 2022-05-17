@@ -33,8 +33,8 @@ public class Network {
         this.controller = controller;
     }
 
-    private String pathServer = "C:\\Users\\Fokusmod\\Desktop\\";
-    private String pathView = "C:\\Users\\Fokusmod\\Desktop";
+    private String pathView = "C:\\Users\\";
+    private String pathServer = "C:";
     protected String correctlyPathDownload = "";
     private String correctNameFile = "";
 
@@ -103,6 +103,7 @@ public class Network {
         pathName += controller.loginField.getText();
         pathServer = pathName;
         File file = new File(pathName);
+        System.out.println(pathServer);
         file.mkdirs();
     }
 
